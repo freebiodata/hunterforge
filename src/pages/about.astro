@@ -1,0 +1,144 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { meta } from '../data/meta';
+import { icons } from '../lib/icons';
+import { dataSources, furtherReading } from '../data/sources';
+import { armorPieces } from '../data/armor';
+import { decorations } from '../data/decorations';
+import { charms } from '../data/charms';
+import { skills } from '../data/skills';
+
+const description =
+  'HunterForge data sources and methodology: game-file-extracted Monster Hunter Wilds data via wilds.mhdb.io, sharpness multipliers cited from the community, snapshot dates and known gaps listed in the open.';
+
+const kindCounts = {
+  armor: skills.filter((s) => s.kind === 'armor').length,
+  weapon: skills.filter((s) => s.kind === 'weapon').length,
+  set: skills.filter((s) => s.kind === 'set').length,
+  group: skills.filter((s) => s.kind === 'group').length,
+};
+---
+
+<Base title="Data Sources & Methodology" description={description} path="/about">
+  <Breadcrumbs items={[{ name: 'Data & Sources' }]} />
+  <div class="page-head">
+    <p class="kicker">Honesty page</p>
+    <h1>Data Sources &amp; Methodology</h1>
+    <p class="lede">
+      If a number on this site looks wrong, this page tells you exactly where it came from, when it was
+      taken, and what it deliberately leaves out.
+    </p>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="num">{meta.snapshotDate}</div><div class="lbl">data snapshot</div></div>
+    <div class="stat"><div class="num">{armorPieces.length}</div><div class="lbl">HR armor pieces</div></div>
+    <div class="stat"><div class="num">{skills.length}</div><div class="lbl">skills</div></div>
+    <div class="stat"><div class="num">{decorations.length}</div><div class="lbl">decorations</div></div>
+    <div class="stat"><div class="num">{charms.length}</div><div class="lbl">charm ranks</div></div>
+  </div>
+
+  <section class="card" style="margin-bottom:1rem;">
+    <h2>Sources fetched for this snapshot</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Source</th><th>What it provided</th><th class="num">Accessed</th></tr></thead>
+        <tbody>
+          {dataSources.map((s) => (
+            <tr>
+              <td>
+                <a href={s.url} target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:.3rem;">
+                  {s.name} <Fragment set:html={icons.external} />
+                </a>
+              </td>
+              <td style="color:var(--bone-dim);">{s.what}</td>
+              <td class="num">{s.accessed}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.85rem; color:var(--bone-faint); margin:.8rem 0 0;">
+      Further reading (not scraped for the dataset): 
+      {furtherReading.map((s) => (
+        <a href={s.url} target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:.3rem; margin-right:.6rem;">
+          {s.name} <Fragment set:html={icons.external} />
+        </a>
+      ))}
+ - the wiki.gg community wiki blocks automated access, so HunterForge links to it for cross-checking instead of crawling it.
+    </p>
+  </section>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>What's in the dataset</h2>
+      <ul style="color:var(--bone-dim); padding-left:1.1rem; margin:0;">
+        <li><strong>{armorPieces.length} high-rank armor pieces</strong> - every piece in the game files at snapshot time: skills, decoration slots (512 pieces have slots), defense, resistances and crafting materials.</li>
+        <li><strong>{skills.length} skills</strong> - {kindCounts.armor} armor, {kindCounts.weapon} weapon, {kindCounts.set} set-bonus and {kindCounts.group} group skills, each with max level and per-level effects straight from the game text.</li>
+        <li><strong>{decorations.length} decorations</strong> - {meta.coverage.armorDecorations} armor jewels and {meta.coverage.weaponDecorations} weapon jewels with slot requirements.</li>
+        <li><strong>{charms.length} charm ranks</strong> in {meta.coverage.charmRanks > 0 ? '64' : '-'} families, with crafting materials.</li>
+        <li><strong>{meta.coverage.armorSets} set bonuses</strong> and 17 group skills with activation thresholds.</li>
+        <li><strong>14 weapon presets</strong> (one per weapon class) for the ERaw calculator.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>Known gaps - shown, not hidden</h2>
+      <ul style="color:var(--bone-dim); padding-left:1.1rem; margin:0;">
+        <li><strong>Low-rank armor is excluded.</strong> The tools target endgame high-rank building; LR pieces exist in the source but aren't in the builder.</li>
+        <li><strong>Decoration crafting materials are missing upstream.</strong> wilds.mhdb.io does not expose them, so the planner links each jewel to the wiki instead of guessing materials.</li>
+        <li><strong>Weapon decorations can't be placed.</strong> The builder manages armor slots only - weapon slots depend on the equipped weapon, which is out of scope.</li>
+        <li><strong>Elemental sharpness multipliers are reference-only.</strong> Community sources disagree on the Blue value (1.05 vs 1.0625); it's marked disputed wherever shown.</li>
+        <li><strong>Some charms are event/limited</strong> and marked not craftable in the source data.</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="tape" role="presentation"></div>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>Methodology</h2>
+      <p style="color:var(--bone-dim); margin-bottom:.5rem;">
+        Datasets are generated, not hand-typed: a script downloads the mhdb snapshots into
+        <span class="mono">data-raw/</span>, validates them (every skill reference must resolve, slot
+        levels must be 1–3, thresholds 2–4) and emits typed TypeScript modules. The validation runs again
+        in the test suite alongside 41 unit tests covering skill aggregation, caps, set/group bonuses,
+        deco fitting and the ERaw formula.
+      </p>
+      <p style="color:var(--bone-dim); margin:0;">
+        Modeling decisions worth knowing: set bonuses pool pieces of the same family across α/β/γ variants
+        (the common case; the few variant-specific bonuses like Gogmazios pool separately), and group
+        skills pool by skill name across different sets - both matching in-game behavior.
+      </p>
+    </section>
+    <section class="card">
+      <h2>Update cadence &amp; corrections</h2>
+      <p style="color:var(--bone-dim); margin-bottom:.5rem;">
+        The snapshot is dated in the banner on every page and in the footer - it does not silently change.
+        Title updates to Wilds add armor and jewels; when the pipeline re-runs against a fresh mhdb
+        snapshot, the date and counts update together, and shared links built against removed items keep
+        working by dropping the unknown pieces <em>and saying so</em> instead of failing.
+      </p>
+      <p style="color:var(--bone-dim); margin:0;">
+        Monster Hunter Wilds is Capcom's; this is a fan tool with no affiliation. If a number disagrees
+        with the game, check it against the wiki links on each tool page - that's what they're for.
+      </p>
+    </section>
+  </div>
+
+  <div class="tape" role="presentation"></div>
+
+  <section class="card" aria-label="Who makes HunterForge">
+    <h2>Who makes HunterForge</h2>
+    <p style="color:var(--bone-dim); max-width:75ch;">
+      HunterForge is an independent, single-maintainer fan project - no company, no ads, no sponsor.
+      It exists because Wilds deserved build tools whose numbers you can trace: dated snapshots, cited
+      sharpness values, and gaps labeled in the interface instead of papered over. Corrections and dataset
+      discrepancy reports are welcome at <a href="mailto:admin@hunterforge.top">admin@hunterforge.top</a>;
+      for anything gameplay-related, the community wiki links on every tool page are the authoritative
+      cross-check. This page (and the <a href="/changelog">changelog</a>) is updated whenever the dataset
+      or the math changes - dates are only bumped for substantive updates.
+    </p>
+  </section>
+</Base>

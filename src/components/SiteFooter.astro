@@ -1,0 +1,53 @@
+---
+interface Props {
+  snapshotDate: string;
+}
+const { snapshotDate } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="inner">
+    <div style="max-width: 380px;">
+      <h4>HUNTERFORGE</h4>
+      <p style="margin:0;">
+        Field-tested build tools for Monster Hunter Wilds. Data snapshot:
+        <span class="mono">{snapshotDate}</span> - high-rank armor, all skills, decorations and charms.
+      </p>
+    </div>
+    <div>
+      <h4>Tools</h4>
+      <ul>
+        <li><a href="/builder">Armor Set Builder</a></li>
+        <li><a href="/decorations">Decoration Planner</a></li>
+        <li><a href="/eraw">Effective Raw Calculator</a></li>
+        <li><a href="/skills">Skill Library</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Reference</h4>
+      <ul>
+        <li><a href="/faq">FAQ</a></li>
+        <li><a href="/about">Data Sources &amp; Methodology</a></li>
+        <li><a href="https://wilds.mhdb.io/en" rel="noopener noreferrer" target="_blank">wilds.mhdb.io</a></li>
+        <li><a href="https://monsterhunterwilds.wiki.gg/" rel="noopener noreferrer" target="_blank">Community wiki</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Trust</h4>
+      <ul>
+        <li><a href="/changelog">Changelog</a></li>
+        <li><a href="/privacy">Privacy - nothing collected</a></li>
+        <li><a href="/terms">Terms of Use</a></li>
+        <li><a href="/sitemap">Site Map</a></li>
+      </ul>
+    </div>
+    <div style="margin-left:auto; max-width: 320px;">
+      <p style="margin:0; font-size:0.78rem;">
+        Fan-made tool. Not affiliated with or endorsed by Capcom.
+        Monster Hunter and Monster Hunter Wilds are trademarks of Capcom Co., Ltd.
+        © {year} hunterforge.top
+      </p>
+    </div>
+  </div>
+</footer>

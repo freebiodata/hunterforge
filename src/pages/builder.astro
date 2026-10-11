@@ -1,0 +1,178 @@
+---
+import Base from '../layouts/Base.astro';
+import DataBanner from '../components/DataBanner.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import TrustMicro from '../components/TrustMicro.astro';
+import FaqSection from '../components/FaqSection.astro';
+import RelatedTools from '../components/RelatedTools.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import { meta } from '../data/meta';
+
+const title = 'Monster Hunter Wilds Armor Set Builder';
+const description =
+  'Free MH Wilds armor set builder: equip high-rank pieces and a charm, search armor by skill, slot decorations, and get skill totals with caps, set bonuses and wasted-level warnings. No sign-up.';
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  '@id': 'https://hunterforge.top/builder/#app',
+  name: 'HunterForge Armor Set Builder',
+  url: 'https://hunterforge.top/builder',
+  description: 'Monster Hunter Wilds armor set builder and skill calculator with level caps, set bonuses and decoration slots.',
+  applicationCategory: 'GameApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<Base title={title} description={description} path="/builder" extraSchema={[appSchema]}>
+  <Breadcrumbs items={[{ name: 'Armor Set Builder' }]} />
+  <div class="page-head">
+    <p class="kicker">Tool 01</p>
+    <h1>Monster Hunter Wilds Armor Set Builder &amp; Skill Calculator</h1>
+    <p class="lede">
+      Equip five high-rank pieces plus a charm, fit decorations into their slots, and read the full skill
+      table - with level caps, wasted levels and set bonus thresholds computed live. Builds are saved in
+      your browser and shareable by link.
+    </p>
+    <TrustMicro />
+  </div>
+
+  <DataBanner />
+
+  <div class="builder-layout" style="margin-top:1.2rem;">
+    <section aria-label="Equipment">
+      <div class="card" style="margin-bottom:0.9rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
+        <button id="btn-example" class="btn btn--ghost btn--small" type="button">Load example build</button>
+        <button id="btn-clear-decos" class="btn btn--ghost btn--small" type="button">Clear decorations</button>
+        <button id="btn-reset" class="btn btn--ghost btn--small" type="button">Reset all</button>
+        <button id="btn-share" class="btn btn--ember btn--small" type="button" style="margin-left:auto;">Copy share link</button>
+      </div>
+
+      <div id="equip-list"></div>
+
+      <div class="card" id="quickfill-card" style="margin-top:0.3rem;">
+        <div class="card-title">
+          <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          Quick-fill decorations by skill
+        </div>
+        <p style="font-size:.84rem; color:var(--bone-dim); margin:.2rem 0 .6rem;">
+          Tick the skills you want; empty slots on equipped pieces get the best matching armor decoration.
+          Already-set slots are left alone. Armor decorations only - weapon decorations fit weapon slots,
+          which this builder doesn't manage.
+        </p>
+        <div id="quickfill-skills" style="display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.7rem;"></div>
+        <button id="btn-quickfill" class="btn btn--ghost btn--small" type="button" disabled>Auto-fill empty slots</button>
+      </div>
+    </section>
+
+    <section class="results-col" aria-label="Build results">
+      <div class="card" id="summary-card" style="margin-bottom:0.9rem;"></div>
+      <div class="card" id="bonus-card" style="margin-bottom:0.9rem;"></div>
+      <div class="card" id="skills-card"></div>
+    </section>
+  </div>
+
+  <dialog class="picker" id="picker">
+    <div class="picker-head">
+      <h3 id="picker-title">Choose a piece</h3>
+      <input type="search" id="picker-search" placeholder="Search name or skill…" style="flex:1; min-width:130px;" aria-label="Search" />
+      <select id="picker-skill" aria-label="Filter by skill"><option value="">Any skill</option></select>
+      <select id="picker-sort" aria-label="Sort">
+        <option value="rarity">Rarity ↓</option>
+        <option value="defense">Defense ↓</option>
+        <option value="slots">Slots ↓</option>
+        <option value="name">Name A→Z</option>
+      </select>
+      <button class="btn btn--ghost btn--small" id="picker-close" type="button">Close</button>
+    </div>
+    <div class="picker-list" id="picker-list"></div>
+  </dialog>
+
+  <p class="sr-only" aria-live="polite" id="live-region"></p>
+
+  <div class="tape" role="presentation"></div>
+
+  <section aria-label="How to use the builder">
+    <h2>How to use the armor set builder</h2>
+    <ol class="howto-steps">
+      <li><strong>Equip a piece:</strong> press “Choose Head / Chest / Arms / Waist / Legs” to open the picker, then search by piece name or filter by skill to find the armor that grants what you want.</li>
+      <li><strong>Add a charm:</strong> the sixth slot takes one charm - Wilds charms carry fixed skills (no decoration slots), so pick the rank that covers a skill your armor misses.</li>
+      <li><strong>Slot decorations:</strong> each equipped piece shows its slots as Lv1–3 diamonds. Pick a jewel per slot, or tick skills in “Quick-fill” and auto-fill every empty slot.</li>
+      <li><strong>Read the table:</strong> the skill panel totals every source, caps each skill at its max level (red pips + a “wasted” badge show over-stacking), and tracks set bonus and group skill thresholds as you equip.</li>
+      <li><strong>Save and share:</strong> the build lives in your browser and in the URL - “Copy share link” gives you a URL that reopens this exact build anywhere.</li>
+    </ol>
+  </section>
+
+  <section aria-label="Worked example" style="margin-top:1.4rem;">
+    <h2>Example: a capped skill and a wasted level</h2>
+    <div class="example-block">
+      <p style="margin:0 0 .4rem;">
+        Equipping the full <strong>Rey Dau α</strong> set (5 pieces) and the <strong>Power Charm III</strong> gives
+        Latent Power <span class="mono">2+2+1</span> from armor plus <span class="mono">3</span> from the charm - 
+        a raw total of <span class="mono">8</span>. The game caps Latent Power at Lv5, so the builder shows
+        <span class="mono">Lv 5/5</span> with <span class="mono">+3 wasted</span>: three levels you're spending
+        budget on for nothing. Swap the charm (or one piece) for something that isn't already capped.
+      </p>
+      <p style="margin:0;">
+        The same build also shows both bonus systems: 4+ pieces activate <strong>Rey Dau's Voltage Lv2</strong>
+        (set bonus, 2/4-piece thresholds), and any 3 pieces sharing the <strong>Lord's Favor</strong> group skill
+        activate <strong>Inspiration Lv1</strong>.
+      </p>
+    </div>
+  </section>
+
+  <section aria-label="How the builder works" style="margin-top:1.4rem;">
+    <h2>How the skill calculator works</h2>
+    <div class="grid-2">
+      <div>
+        <h3 style="font-size:.95rem;">The math</h3>
+        <ul style="color:var(--bone-dim); font-size:.9rem; padding-left:1.1rem;">
+          <li>Skill levels stack <strong>additively</strong> from every source (pieces, charm, decorations, bonuses), then cap at each skill's max level.</li>
+          <li>Set bonuses fire at <strong>2 and 4 pieces</strong> of a family - α/β/γ variants count together; the few variant-specific bonuses (e.g. Gogmazios) pool separately.</li>
+          <li>Group skills fire at <strong>3 pieces sharing the same group skill name</strong>, even across different monster sets.</li>
+          <li>Defense and resistances sum per piece; slot totals count only decorations that legally fit (a [3] jewel needs a Lv3 slot).</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="font-size:.95rem;">Data &amp; limitations</h3>
+        <ul style="color:var(--bone-dim); font-size:.9rem; padding-left:1.1rem;">
+          <li>Source: <a href="https://wilds.mhdb.io/en" target="_blank" rel="noopener noreferrer">wilds.mhdb.io</a> game-file data, snapshot <span class="mono">{meta.snapshotDate}</span> - all {meta.coverage.highRankArmorPieces} high-rank pieces, {meta.coverage.charmRanks} charm ranks, {meta.coverage.armorDecorations} armor jewels.</li>
+          <li>Not included: low-rank armor, weapon decorations (they fit weapon slots), and decoration crafting materials (missing from the source API - flagged, not guessed).</li>
+          <li>The aggregation engine is unit-tested against known in-game combos (caps, 2/4-piece bonuses, 3-piece group skills, slot rules).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <FaqSection
+    heading="Armor builder FAQ"
+    items={[
+      {
+        q: 'How do skill levels stack in this builder?',
+        a: 'Additively, up to each skill\'s cap. Every piece, charm, decoration and bonus adds its levels together; anything past the skill\'s maximum is marked as wasted so you can re-spend it. The <a href="/faq">FAQ</a> walks through the full rules.',
+      },
+      {
+        q: 'Why can\'t I put my weapon jewels in the armor slots?',
+        a: 'Wilds splits decorations into armor jewels and weapon jewels, and each only fits its own slot type. A [3] armor jewel also needs a Lv3 armor slot. The builder refuses invalid placements and tells you why instead of silently ignoring them.',
+      },
+      {
+        q: 'Do α and β pieces count towards the same set bonus?',
+        a: 'Yes - set bonuses count pieces of the same monster family regardless of variant, firing at 2 and 4 pieces. A handful of title-update sets give each variant its own bonus; those pool separately, exactly as the game does.',
+      },
+      {
+        q: 'Where is my build stored?',
+        a: 'In your browser (localStorage) and in the share-link URL. Nothing is sent to a server - the site is fully static and works offline once loaded.',
+      },
+      {
+        q: 'Why does the builder only include high-rank armor?',
+        a: 'The tools target endgame high-rank building. Low-rank pieces exist in the source data but are deliberately excluded; the dataset banner on every page states the scope so the boundary is never hidden.',
+      },
+    ]}
+  />
+
+  <RelatedTools current="/builder" />
+  <TrustBlock />
+</Base>
+
+<script src="../scripts/builder.ts"></script>

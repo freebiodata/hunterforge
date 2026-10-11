@@ -1,0 +1,35 @@
+---
+interface Props {
+  currentPath: string;
+}
+const { currentPath } = Astro.props;
+
+const links = [
+  { href: '/builder', label: 'Set Builder' },
+  { href: '/decorations', label: 'Deco Planner' },
+  { href: '/eraw', label: 'ERaw Calc' },
+  { href: '/skills', label: 'Skills' },
+  { href: '/faq', label: 'FAQ' },
+  { href: '/about', label: 'Data & Sources' },
+];
+const normalize = (p: string) => (p !== '/' && p.endsWith('/') ? p.slice(0, -1) : p);
+---
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/" aria-label="HunterForge home">
+      <span class="mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20 L10 14" />
+          <path d="M9 3 C13 3 19 5 20 10 C21 15 17 20 12 21 C13 16 12 12 8 11 C10 8 9 5 9 3 Z" fill="currentColor" fill-opacity="0.25" />
+        </svg>
+      </span>
+      <span>HUNTER<b>FORGE</b></span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      {links.map((l) => (
+        <a href={l.href} aria-current={normalize(currentPath) === l.href ? 'page' : undefined}>{l.label}</a>
+      ))}
+    </nav>
+  </div>
+</header>

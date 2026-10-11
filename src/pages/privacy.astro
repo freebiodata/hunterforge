@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+const title = 'Privacy Policy';
+const description =
+  'HunterForge privacy policy: no accounts, no cookies, no analytics, no tracking. Builds are stored in your browser and in share links only.';
+---
+
+<Base title={title} description={description} path="/privacy">
+  <Breadcrumbs items={[{ name: 'Privacy' }]} />
+  <div class="page-head">
+    <p class="kicker">Trust</p>
+    <h1>Privacy Policy</h1>
+    <p class="lede">The short version: HunterForge collects nothing. There are no accounts, no cookies, no analytics and no third-party trackers.</p>
+  </div>
+
+  <div style="max-width:780px;">
+    <section class="card" style="margin-bottom:1rem;">
+      <h2 style="font-size:1rem;">What is stored, and where</h2>
+      <ul style="color:var(--bone-dim); font-size:.92rem; padding-left:1.1rem;">
+        <li><strong>Your builds</strong> live in your browser's localStorage and in the share-link URL. They never leave your device unless you copy the link yourself.</li>
+        <li><strong>No file uploads.</strong> None of the tools accept files.</li>
+        <li><strong>No analytics, ads or trackers</strong> of any kind - the site is fully static and loads zero third-party scripts beyond its own fonts and assets.</li>
+      </ul>
+    </section>
+    <section class="card" style="margin-bottom:1rem;">
+      <h2 style="font-size:1rem;">What this means in practice</h2>
+      <p style="color:var(--bone-dim); font-size:.92rem; margin:0;">
+        We cannot identify you, profile you, or report on your usage, because nothing is transmitted to a
+        server. Clearing your browser data removes your saved builds. Share links contain your build in the
+        URL fragment (after <span class="mono">#</span>), which browsers do not send to the server - 
+        whoever you share the link with sees the build; no one else sees anything.
+      </p>
+    </section>
+    <section class="card">
+      <h2 style="font-size:1rem;">Contact</h2>
+      <p style="color:var(--bone-dim); font-size:.92rem; margin:0;">
+        Questions about this policy: <a href="mailto:admin@hunterforge.top">admin@hunterforge.top</a>.
+        Last updated 2026-10-11 (initial release).
+      </p>
+    </section>
+  </div>
+</Base>

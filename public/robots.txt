@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hunterforge.top/sitemap-index.xml

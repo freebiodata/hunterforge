@@ -1,0 +1,50 @@
+---
+/** "Related tools" module with descriptive anchors (master prompt 5.1 module 14). */
+import { icons } from '../lib/icons';
+
+interface Props {
+  current: string;
+}
+const { current } = Astro.props;
+
+const tools = [
+  {
+    href: '/builder',
+    name: 'Monster Hunter Wilds armor set builder',
+    short: 'Armor Set Builder',
+    desc: 'Equip 5 high-rank pieces and a charm, fit decorations, and read the capped skill table with set bonus tracking.',
+  },
+  {
+    href: '/decorations',
+    name: 'MH Wilds decoration planner and farm list',
+    short: 'Decoration Planner',
+    desc: 'Which jewels grant a skill, what slot levels they need, and the exact farm list for a target build.',
+  },
+  {
+    href: '/eraw',
+    name: 'effective raw calculator for MH Wilds weapons',
+    short: 'Effective Raw Calculator',
+    desc: 'Raw × affinity × Critical Boost × sharpness, computed step by step with cited multipliers.',
+  },
+  {
+    href: '/skills',
+    name: 'MH Wilds skill library with max levels',
+    short: 'Skill Library',
+    desc: 'Every skill in the game with its maximum level and per-level effects, linked into the builder.',
+  },
+];
+const shown = tools.filter((t) => t.href !== current);
+---
+
+<section class="related-tools" aria-label="Related tools">
+  <h2>Keep forging</h2>
+  <div class="tools-grid">
+    {shown.map((t) => (
+      <a class="tool-card" href={t.href}>
+        <h3 style="margin:0; font-size:1.02rem;">{t.short}</h3>
+        <p style="margin:0; color:var(--bone-dim); font-size:.88rem;">{t.desc}</p>
+        <span class="go">{t.name} <Fragment set:html={icons.chevron} /></span>
+      </a>
+    ))}
+  </div>
+</section>

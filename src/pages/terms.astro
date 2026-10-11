@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+const title = 'Terms of Use';
+const description =
+  'HunterForge terms of use: a free fan-made Monster Hunter Wilds tool provided as-is, with game data from dated snapshots. Not affiliated with Capcom.';
+---
+
+<Base title={title} description={description} path="/terms">
+  <Breadcrumbs items={[{ name: 'Terms' }]} />
+  <div class="page-head">
+    <p class="kicker">Trust</p>
+    <h1>Terms of Use</h1>
+    <p class="lede">HunterForge is a free, fan-made tool provided as-is, with no warranty of any kind.</p>
+  </div>
+
+  <div style="max-width:780px;">
+    <section class="card" style="margin-bottom:1rem;">
+      <h2 style="font-size:1rem;">The essentials</h2>
+      <ul style="color:var(--bone-dim); font-size:.92rem; padding-left:1.1rem;">
+        <li>The tools are free for personal use. No sign-up, no paywall, no watermark.</li>
+        <li>All numbers come from a dated game-file data snapshot and cited community sources; accuracy is aimed for but not guaranteed. Verify anything load-bearing against the linked community wiki or the game itself.</li>
+        <li>The site and its datasets may change or be updated at any time; shared build links are designed to degrade gracefully (unknown items are dropped with a visible notice), but permanent availability is not guaranteed.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2 style="font-size:1rem;">Trademarks</h2>
+      <p style="color:var(--bone-dim); font-size:.92rem; margin:0;">
+        Monster Hunter and Monster Hunter Wilds are trademarks of Capcom Co., Ltd. HunterForge is an
+        independent fan project and is not affiliated with, endorsed by, or sponsored by Capcom.
+        Last updated 2026-10-11 (initial release).
+      </p>
+    </section>
+  </div>
+</Base>

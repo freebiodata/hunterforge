@@ -1,0 +1,16 @@
+# Cloudflare Pages headers
+
+# Hashed build assets are immutable
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts cached long but revalidateable
+/fonts/*
+  Cache-Control: public, max-age=604800
+
+# Security headers site-wide
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

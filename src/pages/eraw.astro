@@ -1,0 +1,222 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import TrustMicro from '../components/TrustMicro.astro';
+import FaqSection from '../components/FaqSection.astro';
+import RelatedTools from '../components/RelatedTools.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import { sharpnessTiers } from '../data/sharpness';
+import { dataSources } from '../data/sources';
+
+const title = 'Effective Raw Calculator for MH Wilds';
+const description =
+  'Free MH Wilds effective raw calculator: weapon raw × affinity × Critical Boost × sharpness multiplier, step by step, with all seven sharpness tiers compared and multipliers cited. No sign-up.';
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  '@id': 'https://hunterforge.top/eraw/#app',
+  name: 'HunterForge Effective Raw Calculator',
+  url: 'https://hunterforge.top/eraw',
+  description: 'Effective raw calculator for Monster Hunter Wilds weapons with cited sharpness multipliers.',
+  applicationCategory: 'GameApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<Base title={title} description={description} path="/eraw" extraSchema={[appSchema]}>
+  <Breadcrumbs items={[{ name: 'Effective Raw Calculator' }]} />
+  <div class="page-head">
+    <p class="kicker">Tool 03</p>
+    <h1>Effective Raw Calculator (ERaw)</h1>
+    <p class="lede">
+      ERaw turns a weapon's stats into one comparable number:
+      <span class="mono">ERaw = Raw × (1 + Affinity × CritBonus) × Sharpness</span>.
+      Positive affinity crits for 125% (140% at Critical Boost Lv5); negative affinity hits deal 75%.
+    </p>
+    <TrustMicro />
+  </div>
+
+  <div class="notice" style="margin-bottom:1.2rem;" role="note">
+    <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <div>
+      <strong>Scope - this is a weapon-quality metric, not per-hit damage.</strong>
+      True hit damage also needs motion values (per weapon attack), monster hitzones and quest modifiers,
+      which vary by weapon and hunt. Use ERaw to compare weapons and skill plans on equal footing.
+    </div>
+  </div>
+
+  <div class="builder-layout">
+    <section class="card" aria-label="Inputs">
+      <div class="card-title">
+        <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2l-8 12h6l-2 8 10-14h-6l2-6z"/></svg>
+        Weapon profile
+      </div>
+
+      <div class="field" style="margin-bottom:.8rem;">
+        <label for="preset">Load a weapon preset (rarity-8 picks per class, from the snapshot)</label>
+        <select id="preset"></select>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:.9rem;">
+        <div class="field">
+          <label for="raw">True raw</label>
+          <input type="number" id="raw" min="1" max="4000" value="210" />
+        </div>
+        <div class="field">
+          <label for="affinity">Affinity %</label>
+          <input type="number" id="affinity" min="-100" max="100" value="15" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:.9rem;">
+        <label for="sharpness">Sharpness <span id="sharp-hint" class="mono" style="color:var(--ember-bright);"></span></label>
+        <select id="sharpness">
+          {sharpnessTiers.map((t) => (
+            <option value={t.color} selected={t.color === 'white'}>
+              {t.label} - ×{t.raw.toFixed(2)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div class="field" style="margin-bottom:.4rem;">
+        <label for="critboost">Critical Boost level <span class="mono" style="color:var(--bone-faint);">(crit damage 125% → 140%)</span></label>
+        <input type="range" id="critboost" min="0" max="5" step="1" value="0" style="padding:0;" />
+        <div style="display:flex; justify-content:space-between; font-size:.7rem; color:var(--bone-faint);" class="mono">
+          <span>Lv0 ×1.25</span><span>Lv5 ×1.40</span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Results">
+      <div class="card" style="margin-bottom:0.9rem; text-align:center; padding:1.6rem 1rem;">
+        <div style="font-size:.78rem; text-transform:uppercase; letter-spacing:.14em; color:var(--bone-faint);" class="mono">Effective raw</div>
+        <div class="eraw-big" id="eraw-value">-</div>
+        <div id="eraw-note" style="font-size:.85rem; color:var(--bone-dim); margin-top:.4rem;"></div>
+        <ol class="eraw-steps" id="eraw-steps" style="text-align:left;"></ol>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path></svg>
+          Same weapon at every sharpness
+        </div>
+        <div id="sharp-compare"></div>
+        <p style="font-size:.8rem; color:var(--bone-faint); margin:.8rem 0 0;">
+          Sharpness multipliers - 
+          {dataSources.filter((s) => s.what.includes('sharpness') || s.what.includes('Sharpness')).map((s, i) => (
+            <span>{i > 0 && ' · '}<a href={s.url} target="_blank" rel="noopener noreferrer">{s.name.replace(/ - .*/, '')}</a></span>
+          ))}
+          . The elemental column on the reference table below is secondary: sources disagree on the Blue value (1.05 vs 1.0625), so it's marked disputed.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <div class="tape" role="presentation"></div>
+
+  <section aria-label="How to use the calculator">
+    <h2>How to use the ERaw calculator</h2>
+    <ol class="howto-steps">
+      <li><strong>Enter the weapon's true raw and affinity</strong> - or load one of the 14 rarity-8 presets (one per weapon class, straight from the game files).</li>
+      <li><strong>Pick the sharpness tier</strong> you actually fight at (not the top of the gauge you never reach) - each tier shows its multiplier.</li>
+      <li><strong>Set Critical Boost 0–5</strong> if your build runs it; crits go from 125% to 140% damage.</li>
+      <li><strong>Compare:</strong> the steps show the exact arithmetic, and the bar chart runs the same weapon across all seven tiers so you can see what sharpness is worth.</li>
+    </ol>
+  </section>
+
+  <section aria-label="Worked examples" style="margin-top:1.4rem;">
+    <h2>Worked examples</h2>
+    <div class="example-block">
+      <p style="margin:0 0 .5rem;">
+        <strong>200 raw, 40% affinity, White sharpness, no Critical Boost:</strong><br />
+        <span class="mono">200 × (1 + 0.40 × 0.25) × 1.32 = 200 × 1.10 × 1.32 = 290.4</span>
+      </p>
+      <p style="margin:0 0 .5rem;">
+        <strong>250 raw, −20% affinity, Purple sharpness:</strong><br />
+        <span class="mono">250 × (1 − 0.20 × 0.25) × 1.39 = 250 × 0.95 × 1.39 = 330.1</span> - negative affinity applies the fixed 0.75 crit penalty; Critical Boost is ignored.
+      </p>
+      <p style="margin:0;">
+        <strong>200 raw, 100% affinity, White, Critical Boost Lv5:</strong><br />
+        <span class="mono">200 × (1 + 1.00 × 0.40) × 1.32 = 200 × 1.40 × 1.32 = 369.6</span>
+      </p>
+    </div>
+  </section>
+
+  <section aria-label="How the math works" style="margin-top:1.4rem;">
+    <h2>How it works: formula, sources, limits</h2>
+    <div class="grid-2">
+      <div>
+        <h3 style="font-size:.95rem;">The formula</h3>
+        <p style="color:var(--bone-dim); font-size:.9rem;">
+          <span class="mono">ERaw = Raw × (1 + Affinity × CritBonus) × Sharpness</span> where CritBonus is
+          +0.25 at Critical Boost Lv0 (crits deal 125%) and +0.40 at Lv5 (140%). Negative affinity is the
+          expected-value form: a |20%| negative-affinity weapon lands 75% damage hits 20% of the time,
+          for a ×0.95 factor. Every case is the same one-line expected-value calculation - shown in the steps.
+        </p>
+      </div>
+      <div>
+        <h3 style="font-size:.95rem;">Sources &amp; limitations</h3>
+        <ul style="color:var(--bone-dim); font-size:.9rem; padding-left:1.1rem;">
+          <li>Sharpness raw multipliers verified across Fextralife, r/MonsterHunter threads and mod documentation (Purple ×1.39, White ×1.32) - links above the chart.</li>
+          <li>Critical Boost values come from the in-game skill descriptions in the game files: 125 → 128 → 131 → 134 → 137 → 140%.</li>
+          <li>Out of scope on purpose: motion values, hitzones, quest modifiers and elemental damage (its sharpness column is reference-only and partially disputed).</li>
+          <li>The formula implementation is unit-tested, including negative affinity and clamping.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Sharpness reference table" style="margin-top:1.6rem;">
+    <h2>Sharpness reference table (cited)</h2>
+    <div class="table-wrap card" style="padding:.4rem;">
+      <table class="data">
+        <thead><tr><th>Sharpness</th><th class="num">Raw multiplier</th><th class="num">Elemental (reference)</th><th>Note</th></tr></thead>
+        <tbody>
+          {sharpnessTiers.map((t) => (
+            <tr>
+              <td><strong>{t.label}</strong></td>
+              <td class="num">×{t.raw.toFixed(2)}</td>
+              <td class="num">×{t.element.toFixed(2)}</td>
+              <td>{t.disputed ? <span class="badge badge--blood">sources disagree</span> : <span style="color:var(--bone-faint);">-</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.85rem; color:var(--bone-dim); margin:.8rem 0 0; max-width:75ch;">
+      Wilds launched with six sharpness tiers (Red → White); Purple exists in the title-update era with a
+      ×1.39 raw multiplier. White = 1.32 is confirmed by both cited wikis. Elemental multipliers feed the
+      elemental part of the damage formula, which this calculator intentionally leaves out.
+    </p>
+  </section>
+
+  <FaqSection
+    heading="ERaw FAQ"
+    items={[
+      {
+        q: 'What is effective raw?',
+        a: 'A single number folding attack and affinity into one comparison metric: <span class="mono">Raw × (1 + Affinity × CritBonus) × Sharpness</span>. 40% affinity with base crits is worth +10% raw on average; the sharpness tier multiplies everything. Use it to compare weapons and skill plans on equal footing.',
+      },
+      {
+        q: 'Why doesn\'t this show exact damage numbers per hit?',
+        a: 'True hit damage also needs motion values (per attack animation, different for all 14 weapon types), monster hitzones and quest modifiers. A single-answer calculator without those inputs would be wrong by design - so this tool computes everything that depends on the weapon and skills, and nothing that depends on the hit.',
+      },
+      {
+        q: 'Does negative affinity matter?',
+        a: 'Yes: negative-affinity hits deal 75% damage. The calculator applies the fixed penalty and ignores Critical Boost for it (as the game does) - try −20% in the examples above.',
+      },
+      {
+        q: 'Is purple sharpness worth much over white?',
+        a: 'About 5.3% raw (×1.39 vs ×1.32). The comparison chart makes the gap visible for any weapon profile - biggest on high-raw weapons.',
+      },
+    ]}
+  />
+
+  <RelatedTools current="/eraw" />
+  <TrustBlock />
+</Base>
+
+<script src="../scripts/eraw.ts"></script>

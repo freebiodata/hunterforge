@@ -1,0 +1,37 @@
+---
+/**
+ * Visual breadcrumb + matching BreadcrumbList JSON-LD (master prompt 5.11 / 7.3).
+ * The last item is the current page (no link, aria-current).
+ */
+interface Crumb {
+  name: string;
+  href?: string;
+}
+const items: Crumb[] = Astro.props.items;
+const site = 'https://hunterforge.top';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${site}/` },
+    ...items.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 2,
+      name: c.name,
+      ...(c.href ? { item: `${site}${c.href}` } : {}),
+    })),
+  ],
+};
+---
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/">Home</a>
+  {items.map((c) =>
+    c.href ? (
+      <span aria-hidden="true">›</span><a href={c.href}>{c.name}</a>
+    ) : (
+      <span aria-hidden="true">›</span><span aria-current="page">{c.name}</span>
+    )
+  )}
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

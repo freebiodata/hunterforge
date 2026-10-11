@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { meta } from '../data/meta';
+
+const title = 'Changelog';
+const description = 'Real, dated changes to HunterForge: tool releases, dataset snapshot updates and math fixes.';
+---
+
+<Base title={title} description={description} path="/changelog">
+  <Breadcrumbs items={[{ name: 'Changelog' }]} />
+  <div class="page-head">
+    <p class="kicker">Trust</p>
+    <h1>Changelog</h1>
+    <p class="lede">Every substantive change, dated. Dates move only when something real changes.</p>
+  </div>
+
+  <div style="max-width:780px;">
+    <section class="card">
+      <h2 style="font-size:1rem;"><span class="mono" style="color:var(--ember-bright);">2026-10-11</span> - v1.0.0: initial release</h2>
+      <ul style="color:var(--bone-dim); font-size:.92rem; padding-left:1.1rem; margin:.4rem 0 0;">
+        <li>Launched three tools: <a href="/builder">armor set builder</a> (5 pieces + charm, skill caps, wasted levels, set/group bonus tracking, deco slots, share links), <a href="/decorations">decoration planner</a> (skill lookup, farm lists, slot budgets, full jewel browser), and the <a href="/eraw">effective raw calculator</a> (affinity, Critical Boost Lv0–5, seven cited sharpness tiers).</li>
+        <li>Dataset snapshot {meta.snapshotDate} from wilds.mhdb.io game files: {meta.coverage.highRankArmorPieces} high-rank armor pieces, {meta.coverage.skillsTotal} skills, {meta.coverage.decorations} decorations, {meta.coverage.charmRanks} charm ranks, {meta.coverage.armorSets} set bonuses.</li>
+        <li>Skill library ({meta.coverage.skillsTotal} skills with per-level effects), FAQ, sources &amp; methodology, privacy and terms pages.</li>
+        <li>41 unit tests covering the aggregation engine, ERaw math, deco planning and dataset integrity.</li>
+      </ul>
+    </section>
+  </div>
+</Base>

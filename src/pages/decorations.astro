@@ -1,0 +1,180 @@
+---
+import Base from '../layouts/Base.astro';
+import DataBanner from '../components/DataBanner.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import TrustMicro from '../components/TrustMicro.astro';
+import FaqSection from '../components/FaqSection.astro';
+import RelatedTools from '../components/RelatedTools.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import { meta } from '../data/meta';
+
+const title = 'Monster Hunter Wilds Decoration Planner';
+const description =
+  'MH Wilds decoration planner: see which jewels grant a skill and what slot levels they need, then turn a target skill plan into an exact farm list. Free, no sign-up.';
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  '@id': 'https://hunterforge.top/decorations/#app',
+  name: 'HunterForge Decoration Planner',
+  url: 'https://hunterforge.top/decorations',
+  description: 'Monster Hunter Wilds decoration planner: skill-to-jewel lookup and farm lists with slot budgets.',
+  applicationCategory: 'GameApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<Base title={title} description={description} path="/decorations" extraSchema={[appSchema]}>
+  <Breadcrumbs items={[{ name: 'Decoration Planner' }]} />
+  <div class="page-head">
+    <p class="kicker">Tool 02</p>
+    <h1>Monster Hunter Wilds Decoration Planner</h1>
+    <p class="lede">
+      Wilds splits decorations into <strong>armor jewels</strong> (fit armor slots Lv1–3) and
+      <strong>weapon jewels</strong> (fit weapon slots). Look up what grants a skill, what slot it needs,
+      and plan exactly which jewels to farm for a target build.
+    </p>
+    <TrustMicro />
+  </div>
+
+  <DataBanner />
+
+  <div class="grid-2" style="margin-top:1.2rem;">
+    <section class="card" aria-label="Skill lookup">
+      <div class="card-title">
+        <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Look up a skill
+      </div>
+      <div class="field" style="margin-bottom:.8rem;">
+        <label for="skill-select">Skill</label>
+        <select id="skill-select"></select>
+      </div>
+      <div id="skill-decos"></div>
+    </section>
+
+    <section class="card" aria-label="Farm planner">
+      <div class="card-title">
+        <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        Farm planner
+      </div>
+      <p style="font-size:.85rem; color:var(--bone-dim); margin:.2rem 0 .7rem;">
+        Add the skill levels your build still needs after armor - the planner picks the exact jewels and
+        totals the slot budget your armor must provide.
+      </p>
+      <div style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap; margin-bottom:.8rem;">
+        <div class="field" style="flex:1; min-width:150px;">
+          <label for="target-skill">Skill</label>
+          <select id="target-skill"></select>
+        </div>
+        <div class="field" style="width:110px;">
+          <label for="target-level">Levels</label>
+          <input type="number" id="target-level" min="1" max="5" value="1" />
+        </div>
+        <button class="btn btn--ember btn--small" id="btn-add-target" type="button">Add</button>
+      </div>
+      <div id="target-list" style="display:flex; flex-direction:column; gap:.4rem; margin-bottom:.8rem;"></div>
+      <div id="farm-plan"></div>
+    </section>
+  </div>
+
+  <div class="tape" role="presentation"></div>
+
+  <section class="card" aria-label="Decoration browser">
+    <div class="card-title">
+      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z"/></svg>
+      Browse all decorations
+    </div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.7rem;">
+      <input type="search" id="deco-search" placeholder="Search jewel or skill…" style="flex:1; min-width:160px;" aria-label="Search decorations" />
+      <select id="deco-kind" aria-label="Filter by kind">
+        <option value="armor">Armor jewels</option>
+        <option value="weapon">Weapon jewels</option>
+        <option value="all">All</option>
+      </select>
+      <select id="deco-slot" aria-label="Filter by slot">
+        <option value="0">Any slot</option>
+        <option value="1">Lv1 slot</option>
+        <option value="2">Lv2 slot</option>
+        <option value="3">Lv3 slot</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="data" id="deco-table">
+        <thead>
+          <tr><th>Jewel</th><th>Fits</th><th>Rarity</th><th>Grants</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="mono" id="deco-count" style="font-size:.75rem; color:var(--bone-faint); margin:.6rem 0 0;"></p>
+    <p style="font-size:.8rem; color:var(--bone-faint); margin:.6rem 0 0;">
+      Crafting materials for decorations are <strong>not in the source dataset</strong> (wilds.mhdb.io does
+      not expose them) - use the wiki link on each jewel to check its materials. This gap is intentional
+      and visible rather than guessed.
+    </p>
+  </section>
+
+  <section aria-label="How to use the planner" style="margin-top:1.6rem;">
+    <h2>How to use the decoration planner</h2>
+    <ol class="howto-steps">
+      <li><strong>Check a skill:</strong> pick it in “Look up a skill” to see every jewel that grants it - armor jewels and weapon jewels are listed separately, each with the slot level it needs.</li>
+      <li><strong>Build a target list:</strong> in the farm planner, add the skill levels your armor doesn't already cover (check totals in the <a href="/builder">set builder</a> first).</li>
+      <li><strong>Read the farm list:</strong> the planner picks the cheapest jewels that reach your target and totals the slot budget (e.g. “needs 3× Lv3 slots”). A warning appears when decorations alone can't reach a level - some skills only come from armor, charms or set bonuses.</li>
+      <li><strong>Farm it:</strong> copy the list, and use the wiki link on each jewel for its crafting materials (not in the game-file dataset - stated, not guessed).</li>
+    </ol>
+  </section>
+
+  <section aria-label="Worked example" style="margin-top:1.4rem;">
+    <h2>Example: planning Flayer Lv3</h2>
+    <div class="example-block">
+      <p style="margin:0;">
+        Target <strong>Flayer Lv3</strong>: only the <span class="mono">Flayer Jewel [3]</span> grants it (Lv1 per
+        jewel), so the plan is <span class="mono">3× Flayer Jewel [3]</span> consuming
+        <span class="mono">3× Lv3 slots</span>. If your armor has just two Lv3 slots, the remaining level has to
+        come from a piece or charm instead - exactly the trade the slot budget makes visible.
+      </p>
+    </div>
+  </section>
+
+  <section aria-label="How the planner works" style="margin-top:1.4rem;">
+    <h2>How it works</h2>
+    <p style="color:var(--bone-dim); max-width:72ch;">
+      Jewel data comes from the game files via <a href="https://wilds.mhdb.io/en" target="_blank" rel="noopener noreferrer">wilds.mhdb.io</a>
+      (snapshot <span class="mono">{meta.snapshotDate}</span>): {meta.coverage.decorations} decorations - 
+      {meta.coverage.armorDecorations} armor jewels and {meta.coverage.weaponDecorations} weapon jewels, each
+      with its slot requirement and granted skill levels. A jewel fits a slot of at least its own level
+      (a Lv3 jewel fits any Lv3+ slot; a Lv1 jewel fits everything). Farm plans prefer the most granted levels
+      per jewel, then the lowest slot, so big slots stay free - the same greedy rule the builder's quick-fill uses.
+      Limitations: decoration crafting materials are not exposed by the source API (flagged in the UI), and
+      weapon jewels are listed for reference but only armor jewels feed the planner.
+    </p>
+  </section>
+
+  <FaqSection
+    heading="Decoration FAQ"
+    items={[
+      {
+        q: 'Can armor jewels go into weapon slots?',
+        a: 'No. Wilds separates armor jewels (armor slots) from weapon jewels (weapon slots), and each kind only fits its own slots. Within armor, a jewel needs a slot at least its own level: a [3] jewel only fits a Lv3 slot; a [1] jewel fits any slot.',
+      },
+      {
+        q: 'Which skills have no decoration at all?',
+        a: 'Some armor skills - like Rice Ball or Blight Resistance in the current snapshot - have no armor jewel and can only come from armor pieces, charms or set bonuses. The planner says so explicitly instead of leaving you hunting for a jewel that doesn\'t exist.',
+      },
+      {
+        q: 'Why are there no crafting materials on the jewels?',
+        a: 'The game-file API (wilds.mhdb.io) doesn\'t expose decoration recipes. Rather than guessing monster materials, every jewel links to its community-wiki page for materials - the same honesty policy behind every dataset gap on this site.',
+      },
+      {
+        q: 'How many jewels can I actually slot?',
+        a: 'Depends on your armor: of the 582 high-rank pieces in the snapshot, 512 have at least one decoration slot (up to three, levels 1–3). The <a href="/builder">set builder</a> shows and validates every slot as you equip pieces.',
+      },
+    ]}
+  />
+
+  <RelatedTools current="/decorations" />
+  <TrustBlock />
+</Base>
+
+<script src="../scripts/decorations.ts"></script>

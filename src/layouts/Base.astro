@@ -1,0 +1,86 @@
+---
+import '@fontsource-variable/oswald';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { meta } from '../data/meta';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Canonical path, e.g. "/builder". */
+  path: string;
+  ogType?: 'website' | 'article';
+  noIndex?: boolean;
+  /** Extra JSON-LD graph nodes rendered in <head> (WebApplication, BreadcrumbList, …). */
+  extraSchema?: Record<string, unknown>[];
+}
+
+const { title, description, path, ogType = 'website', noIndex = false, extraSchema = [] } = Astro.props;
+const site = 'https://hunterforge.top';
+const canonical = site + (path === '/' ? '' : path);
+const fullTitle = path === '/' ? title : `${title} | HunterForge`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noIndex && <meta name="robots" content="noindex" />}
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#1d3528" />
+
+    <meta property="og:site_name" content="HunterForge" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={`${site}/og.png`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${site}/og.png`} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': `${site}/#website`,
+      name: 'HunterForge',
+      url: site,
+      description: 'Monster Hunter Wilds build and skill calculators: armor set builder, decoration planner and effective raw calculator.',
+      inLanguage: 'en',
+      publisher: { '@id': `${site}/#organization` },
+    })} />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      '@id': `${site}/#organization`,
+      name: 'HunterForge',
+      url: site,
+      logo: `${site}/favicon.svg`,
+      description: 'Independent fan project building free Monster Hunter Wilds calculators from game-file data.',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        email: 'admin@hunterforge.top',
+      },
+    })} />
+    {extraSchema.map((node) => (
+      <script type="application/ld+json" set:html={JSON.stringify(node)} />
+    ))}
+  </head>
+  <body>
+    <SiteHeader currentPath={path} />
+    <main>
+      <slot />
+    </main>
+    <SiteFooter snapshotDate={meta.snapshotDate} />
+  </body>
+</html>

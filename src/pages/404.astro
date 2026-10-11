@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+
+const description = 'Page not found - the trail ends here. Back to the HunterForge tools.';
+---
+
+<Base title="404 - Trail Lost" description={description} path="/404" noIndex>
+  <div style="text-align:center; padding:4rem 1rem;">
+    <p class="kicker mono" style="color:var(--ember); letter-spacing:.2em; text-transform:uppercase;">Error 404</p>
+    <h1 style="font-size:clamp(2.2rem,7vw,3.6rem);">The trail ends here</h1>
+    <p style="color:var(--bone-dim); max-width:46ch; margin:0 auto 1.6rem;">
+      Whatever page you were tracking moved, or never existed. The forge is still lit - 
+      pick a tool and get back to the hunt.
+    </p>
+    <div style="display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap;">
+      <a class="btn btn--ember" href="/">Back to camp</a>
+      <a class="btn btn--ghost" href="/builder">Set Builder</a>
+      <a class="btn btn--ghost" href="/eraw">ERaw Calculator</a>
+    </div>
+  </div>
+</Base>

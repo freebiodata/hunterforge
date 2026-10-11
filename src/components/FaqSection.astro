@@ -1,0 +1,18 @@
+---
+/** Server-rendered on-page FAQ (real questions, in initial HTML - master prompt 5.1 module 13). */
+interface Props {
+  items: { q: string; a: string }[];
+  heading?: string;
+}
+const { items, heading = 'FAQ' } = Astro.props;
+---
+
+<section class="faq-section" aria-label={heading}>
+  <h2>{heading}</h2>
+  {items.map((f) => (
+    <details class="faq">
+      <summary>{f.q}</summary>
+      <div class="faq-body" set:html={f.a} />
+    </details>
+  ))}
+</section>

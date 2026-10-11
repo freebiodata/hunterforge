@@ -1,0 +1,23 @@
+---
+/** Trust block closing every tool page (master prompt 5.1 module 15). */
+import { meta } from '../data/meta';
+---
+
+<section class="trust-block" aria-label="About this data">
+  <div class="card card--paper">
+    <h2 style="font-size:1rem;">Where these numbers come from</h2>
+    <p style="margin:.4rem 0 .6rem; font-size:.9rem;">
+      Armor, skills, decorations and charms are extracted from the game files via
+      <a href="https://wilds.mhdb.io/en" target="_blank" rel="noopener noreferrer">wilds.mhdb.io</a>
+      (snapshot <strong class="mono">{meta.snapshotDate}</strong>); sharpness multipliers are cited from the
+      community sources on the <a href="/about">data &amp; sources page</a>. The math runs entirely in your
+      browser - no accounts, no tracking. If a value disagrees with your game, cross-check it against the
+      <a href="https://monsterhunterwilds.wiki.gg/" target="_blank" rel="noopener noreferrer">community wiki</a>;
+      that's what the wiki links on every row are for.
+    </p>
+    <p style="margin:0; font-size:.82rem; color:#4a5443;">
+      Last reviewed {meta.snapshotDate} · Fan-made tool, not affiliated with Capcom ·
+      <a href="/privacy">Privacy</a> (nothing is collected) · <a href="/changelog">Changelog</a>
+    </p>
+  </div>
+</section>

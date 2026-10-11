@@ -1,0 +1,23 @@
+---
+import { meta } from '../data/meta';
+
+interface Props {
+  variant?: 'default' | 'warn';
+  /** Extra context line shown under the standard snapshot text. */
+  note?: string;
+}
+const { variant = 'default', note } = Astro.props;
+---
+
+<aside class={`notice ${variant === 'warn' ? 'notice--warn' : ''}`} role="note">
+  <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="12" y1="8" x2="12" y2="12"></line>
+    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+  </svg>
+  <div>
+    <strong>Data snapshot {meta.snapshotDate} - high-rank subset.</strong>
+    {note ?? 'Covers all high-rank armor pieces, decorations, charms and skills from game-file data. Low-rank gear, weapon decorations on weapons, and decoration crafting materials are not included.'}
+    <a href="/about">What exactly is in the dataset?</a>
+  </div>
+</aside>

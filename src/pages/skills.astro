@@ -1,0 +1,125 @@
+---
+import Base from '../layouts/Base.astro';
+import DataBanner from '../components/DataBanner.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import RelatedTools from '../components/RelatedTools.astro';
+import { skills } from '../data/skills';
+import { piecesGrantingSkill, armorDecosGrantingSkill, charmsGrantingSkill } from '../data/lookup';
+import { icons } from '../lib/icons';
+
+const title = 'MH Wilds Skill List: Max Levels & Effects';
+const description =
+  'Every Monster Hunter Wilds skill with its max level cap and per-level effects: armor skills, weapon skills, set bonuses and group skills, with the pieces, charms and jewels that grant each.';
+
+const kindLabels: Record<string, string> = {
+  armor: 'Armor',
+  weapon: 'Weapon',
+  set: 'Set bonus',
+  group: 'Group',
+};
+const kindBadges: Record<string, string> = {
+  armor: 'badge--ember',
+  weapon: 'badge',
+  set: 'badge--gold',
+  group: 'badge--moss',
+};
+
+// Precompute grant counts for display (server-side, once per build).
+const grantInfo = new Map<number, { pieces: number; decos: number; charms: number }>();
+for (const s of skills) {
+  grantInfo.set(s.id, {
+    pieces: piecesGrantingSkill(s.id).length,
+    decos: armorDecosGrantingSkill(s.id).length,
+    charms: charmsGrantingSkill(s.id).length,
+  });
+}
+const sorted = [...skills].sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<Base title={title} description={description} path="/skills">
+  <Breadcrumbs items={[{ name: 'Skill Library' }]} />
+  <div class="page-head">
+    <p class="kicker">Reference</p>
+    <h1>Monster Hunter Wilds Skill Library</h1>
+    <p class="lede">
+      All {skills.length} skills in the snapshot with their maximum levels and per-level effects - armor
+      skills, weapon skills, set bonuses and group skills. Filter, then jump to the builder pre-filtered
+      for a skill.
+    </p>
+  </div>
+
+  <DataBanner />
+
+  <div class="card" style="margin:1.2rem 0; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
+    <input type="search" id="skill-search" placeholder="Search skills…" style="flex:1; min-width:160px;" aria-label="Search skills" />
+    <select id="skill-kind" aria-label="Filter by kind">
+      <option value="all">All kinds</option>
+      <option value="armor">Armor skills</option>
+      <option value="weapon">Weapon skills</option>
+      <option value="set">Set bonuses</option>
+      <option value="group">Group skills</option>
+    </select>
+    <span class="mono" id="skill-count" style="font-size:.75rem; color:var(--bone-faint);"></span>
+  </div>
+
+  <div class="skill-grid" id="skill-grid">
+    {sorted.map((s) => {
+      const info = grantInfo.get(s.id)!;
+      return (
+        <article class="skill-item" data-kind={s.kind} data-name={s.name.toLowerCase()} id={`skill-${s.id}`}>
+          <h3>
+            {s.name}
+            <span class={`badge ${kindBadges[s.kind]}`}>{kindLabels[s.kind]}</span>
+            <span class="badge">max Lv{s.maxLevel}</span>
+          </h3>
+          <div style="display:flex; gap:.35rem; flex-wrap:wrap; margin-bottom:.35rem;">
+            {info.pieces > 0 && (
+              <a class="badge badge--ember" href={`/builder?skill=${s.id}`}>
+                <Fragment set:html={icons.chest} /> {info.pieces} HR pieces grant it <Fragment set:html={icons.chevron} />
+              </a>
+            )}
+            {info.decos > 0 && (
+              <a class="badge" href="/decorations">
+                <Fragment set:html={icons.gem} /> {info.decos} armor jewel{info.decos > 1 ? 's' : ''}
+              </a>
+            )}
+            {info.charms > 0 && (
+              <span class="badge">
+                <Fragment set:html={icons.charm} /> {info.charms} charm rank{info.charms > 1 ? 's' : ''}
+              </span>
+            )}
+            {info.pieces + info.decos + info.charms === 0 && (
+              <span class="badge badge--blood"><Fragment set:html={icons.warning} /> not on HR armor / decos in snapshot</span>
+            )}
+          </div>
+          <p class="desc">{s.levels[0]}</p>
+          <details>
+            <summary class="mono">all {s.maxLevel} levels</summary>
+            <ol class="levels">
+              {s.levels.map((lvl, i) => (
+                <li><span class="mono" style="color:var(--ember-bright);">Lv{i + 1}</span> - {lvl}</li>
+              ))}
+            </ol>
+          </details>
+        </article>
+      );
+    })}
+  </div>
+  <p id="skill-empty" style="display:none; color:var(--bone-faint);">No skills match that filter.</p>
+
+  <section aria-label="How skill levels work" style="margin-top:1.8rem;">
+    <h2>How skill levels work in Wilds</h2>
+    <p style="color:var(--bone-dim); max-width:75ch;">
+      Skill levels stack additively from every source - armor pieces, charms, decorations, set bonuses
+      (2/4 pieces of a family) and group skills (3 pieces sharing the skill name) - until they hit the
+      skill's maximum level listed here. Levels past the cap do nothing, which is why the
+      <a href="/builder">set builder</a> marks over-stacking as wasted. Weapon-kind skills like Attack Boost
+      and Critical Eye live on weapon decorations and weapon slots in Wilds, which is why the armor builder
+      doesn't count them.
+    </p>
+  </section>
+
+  <RelatedTools current="/skills" />
+</Base>
+
+<script src="../scripts/skills-filter.ts"></script>
